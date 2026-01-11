@@ -1,0 +1,7 @@
+apriltag:
+  ros__parameters:
+    tag_family: "tag36h11"
+    tag_size: 0.20
+    max_hamming: 0
+    z_up: true
+

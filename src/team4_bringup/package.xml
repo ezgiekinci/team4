@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>team4_bringup</name>
+  <version>0.0.0</version>
+  <description>Team 4 bringup package (launch/config utilities)</description>
+
+  <maintainer email="diakamos@todo.todo">diakamos</maintainer>
+  <license>Apache-2.0</license>
+
+  <!-- Build tool -->
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <!-- Runtime dependencies -->
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+
+  <!-- Your current use case -->
+  <exec_depend>apriltag_ros</exec_depend>
+  <exec_depend>apriltag_msgs</exec_depend>
+
+  <!-- Optional (but common) -->
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
+
