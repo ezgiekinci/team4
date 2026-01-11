@@ -1,0 +1,331 @@
+<?xml version="1.0"?>
+<robot name="scout_v2"
+       xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <!-- Argümanlar -->
+    <xacro:arg name="robot_namespace" default="/" />
+    <xacro:arg name="urdf_extras" default="empty.urdf" />
+
+    <!-- Teker makroları -->
+    <xacro:include filename="$(find scout_description)/urdf/scout_wheel_type1.xacro" />
+    <xacro:include filename="$(find scout_description)/urdf/scout_wheel_type2.xacro" />
+
+    <!-- ZED 2i kamera için xacro dosyası -->
+    <xacro:include filename="$(find zed_wrapper)/urdf/zed_macro.urdf.xacro" />
+
+    <!-- Sabitler -->
+    <xacro:property name="M_PI" value="3.14159"/>
+
+    <!-- Araç geometrisi -->
+    <xacro:property name="base_x_size" value="0.9250000" />
+    <xacro:property name="base_y_size" value="0.380000" />
+    <xacro:property name="base_z_size" value="0.210000" />
+
+    <xacro:property name="wheelbase" value="0.498" />
+    <xacro:property name="track" value="0.58306" />
+    <xacro:property name="wheel_vertical_offset" value="-0.0702" />
+
+    <xacro:property name="wheel_length" value="1.1653e-01" />
+    <xacro:property name="wheel_radius" value="1.6459e-01" />
+
+    <!-- ====================== -->
+    <!-- BASE LINK              -->
+    <!-- ====================== -->
+    <link name="base_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 ${M_PI}" />
+            <geometry>
+                <!-- Orijinal Scout 2.0 mesh -->
+                <mesh filename="file://$(find scout_description)/meshes/base_link.dae" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0.008" rpy="0 0 0" />
+            <geometry>
+                <box size="${base_x_size} ${base_y_size} ${base_z_size}"/>
+            </geometry>
+        </collision>
+        <collision>
+            <origin xyz="0 0 ${base_z_size/6}" rpy="0 0 0" />
+            <geometry>
+                <box size="${base_x_size/6} ${base_y_size*1.65} ${base_z_size/3}"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <link name="inertial_link">
+        <inertial>
+            <mass value="50" />
+            <!-- Orijinal inertia değerleri -->
+            <origin xyz="0.0 0.0 0.0" />
+            <inertia ixx="2.288641" ixy="0" ixz="0"
+                     iyy="5.103976" iyz="0" izz="3.431465" />
+        </inertial>
+    </link>
+
+    <joint name="inertial_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <parent link="base_link" />
+        <child link="inertial_link" />
+    </joint>
+
+    <!-- ====================== -->
+    <!-- ZED 2i KAMERA TANIMI   -->
+    <!-- ====================== -->
+
+    <!-- ZED 2i kamera makrosunu çağırıyoruz -->
+    <xacro:zed_camera name="zed2i" model="zed2i">
+        <gnss_origin/>
+    </xacro:zed_camera>
+
+    <!-- ZED 2i kamerayı base_link'e sabitleyen eklem -->
+    <joint name="zed2i_joint" type="fixed">
+        <!-- Biraz aşağı çekilmiş Z -->
+        <origin xyz="0.35 0.0 0.23" rpy="0 0 0" />
+        <parent link="base_link" />
+        <child  link="zed2i_camera_link" />
+    </joint>
+
+    <!-- ZED 2i için ekstra görsel link (aynı STL model) -->
+    <link name="zed2i_visual_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <!-- ZED paketindeki STL modelini paket yolu ile kullanıyoruz -->
+                <mesh filename="package://zed_msgs/meshes/zed2i.stl" scale="1 1 1"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <joint name="zed2i_visual_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <!-- Kameranın fiziksel merkezi: macro’dan gelen link -->
+        <parent link="zed2i_camera_center"/>
+        <child  link="zed2i_visual_link"/>
+    </joint>
+
+    <!-- ====================== -->
+    <!-- 2D LiDAR LİNKLERİ      -->
+    <!-- ====================== -->
+
+    <!-- ÖN LiDAR -->
+    <link name="front_lidar_link">
+        <inertial>
+            <mass value="0.01"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="1e-6" ixy="0" ixz="0"
+                     iyy="1e-6" iyz="0" izz="1e-6"/>
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="${M_PI/2} 0 0"/>
+            <geometry>
+                <!-- RP LIDAR STL -->
+                <mesh filename="file://$(find scout_description)/meshes/rp_lidar.stl"
+                      scale="0.0015 0.0015 0.0015"/>
+            </geometry>
+            <material name="lidar_gray">
+                <color rgba="0.2 0.2 0.2 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="0.04" length="0.06"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="front_lidar_joint" type="fixed">
+        <origin xyz="0.40 0.0 0.22" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child  link="front_lidar_link"/>
+    </joint>
+
+    <!-- ARKA LiDAR -->
+    <link name="rear_lidar_link">
+        <inertial>
+            <mass value="0.01"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="1e-6" ixy="0" ixz="0"
+                     iyy="1e-6" iyz="0" izz="1e-6"/>
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="${M_PI/2} 0 0"/>
+            <geometry>
+                <mesh filename="file://$(find scout_description)/meshes/rp_lidar.stl"
+                      scale="0.0015 0.0015 0.0015"/>
+            </geometry>
+            <material name="lidar_gray">
+                <color rgba="0.2 0.2 0.2 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="0.04" length="0.03"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="rear_lidar_joint" type="fixed">
+        <origin xyz="-0.40 0.0 0.22" rpy="0 0 ${M_PI}"/>
+        <parent link="base_link"/>
+        <child  link="rear_lidar_link"/>
+    </joint>
+
+    <!-- ====================== -->
+    <!-- TEKERLER               -->
+    <!-- ====================== -->
+
+    <!-- wheel labeled from 0 to 3, conter-clockwise, starting from front right wheel -->
+    <!-- motor 1 and 2 (left side) are mechanically installed in a reversed direction -->
+    <xacro:scout_wheel_type1 wheel_prefix="front_right">
+        <origin xyz="${wheelbase/2} ${-track/2} ${wheel_vertical_offset}" rpy="3.14 0 0" />
+    </xacro:scout_wheel_type1>
+
+    <xacro:scout_wheel_type2 wheel_prefix="front_left">
+        <origin xyz="${wheelbase/2} ${track/2} ${wheel_vertical_offset}" rpy="0 0 0" />
+    </xacro:scout_wheel_type2>
+
+    <xacro:scout_wheel_type2 wheel_prefix="rear_left">
+        <origin xyz="${-wheelbase/2} ${track/2} ${wheel_vertical_offset}" rpy="0 0 0" />
+    </xacro:scout_wheel_type2>
+
+    <xacro:scout_wheel_type1 wheel_prefix="rear_right">
+        <origin xyz="${-wheelbase/2} ${-track/2} ${wheel_vertical_offset}" rpy="3.14 0 0" />
+    </xacro:scout_wheel_type1>
+
+    <!-- ====================== -->
+    <!-- GAZEBO SENSOR PLUGINS  -->
+    <!-- ====================== -->
+
+    <!-- Ön 2D LiDAR (180°, 0.33° çözünürlük, 15 m) -->
+    <gazebo reference="front_lidar_link">
+      <sensor name="front_lidar" type="ray">
+        <always_on>true</always_on>
+        <visualize>true</visualize>
+        <update_rate>15</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <!-- 180° / 545 ≈ 0.33° -->
+              <samples>545</samples>
+              <resolution>1.0</resolution>
+              <min_angle>-1.570796</min_angle> <!-- -90° -->
+              <max_angle> 1.570796</max_angle> <!--  90° -->
+            </horizontal>
+          </scan>
+          <range>
+            <min>0.1</min>
+            <max>15.0</max>
+            <resolution>0.01</resolution>
+          </range>
+        </ray>
+
+        <plugin name="front_lidar_plugin" filename="libgazebo_ros_ray_sensor.so">
+          <ros>
+            <!-- ROS2 tarafında /front_scan olarak görünsün -->
+            <remapping>~/out:=front_scan</remapping>
+          </ros>
+          <output_type>sensor_msgs/LaserScan</output_type>
+          <frame_name>front_lidar_link</frame_name>
+        </plugin>
+      </sensor>
+    </gazebo>
+
+    <!-- Arka 2D LiDAR -->
+    <gazebo reference="rear_lidar_link">
+      <sensor name="rear_lidar" type="ray">
+        <always_on>true</always_on>
+        <visualize>true</visualize>
+        <update_rate>15</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>545</samples>
+              <resolution>1.0</resolution>
+              <min_angle>-1.570796</min_angle>
+              <max_angle> 1.570796</max_angle>
+            </horizontal>
+          </scan>
+          <range>
+            <min>0.1</min>
+            <max>15.0</max>
+            <resolution>0.01</resolution>
+          </range>
+        </ray>
+
+        <plugin name="rear_lidar_plugin" filename="libgazebo_ros_ray_sensor.so">
+          <ros>
+            <remapping>~/out:=rear_scan</remapping>
+          </ros>
+          <output_type>sensor_msgs/LaserScan</output_type>
+          <frame_name>rear_lidar_link</frame_name>
+        </plugin>
+      </sensor>
+    </gazebo>
+
+    <!-- ZED konumunda derinlik kamerası (RGBD simülasyonu) -->
+    <gazebo reference="zed2i_camera_center">
+      <sensor name="zed2i_depth_camera" type="depth">
+        <visualize>true</visualize>
+        <update_rate>30.0</update_rate>
+        <camera name="camera">
+          <!-- ~80° FOV -->
+          <horizontal_fov>1.3962634</horizontal_fov>
+          <image>
+            <width>1280</width>
+            <height>720</height>
+            <format>R8G8B8</format>
+          </image>
+          <clip>
+            <near>0.1</near>
+            <far>20.0</far>
+          </clip>
+        </camera>
+
+        <plugin name="zed2i_depth_camera_controller"
+                filename="libgazebo_ros_camera.so">
+          <frame_name>zed2i_camera_center</frame_name>
+        </plugin>
+      </sensor>
+    </gazebo>
+
+    <!-- IMU + GPS (base_link’e bağlı) -->
+    <gazebo reference="base_link">
+      <!-- IMU -->
+      <sensor name="imu_sensor" type="imu">
+        <always_on>true</always_on>
+        <update_rate>50</update_rate>
+        <plugin name="imu_plugin" filename="libgazebo_ros_imu_sensor.so">
+          <ros>
+            <!-- /imu/data -->
+            <namespace>/imu</namespace>
+            <remapping>~/out:=data</remapping>
+          </ros>
+          <initial_orientation_as_reference>false</initial_orientation_as_reference>
+        </plugin>
+      </sensor>
+
+      <!-- GPS -->
+      <sensor name="gps_sensor" type="gps">
+        <always_on>true</always_on>
+        <update_rate>5</update_rate>
+        <plugin name="gps_plugin" filename="libgazebo_ros_gps_sensor.so">
+          <ros>
+            <!-- /gps/fix -->
+            <namespace>/gps</namespace>
+            <remapping>~/out:=fix</remapping>
+          </ros>
+        </plugin>
+      </sensor>
+    </gazebo>
+
+    <!-- Additional definitions -->
+    <xacro:include filename="$(arg urdf_extras)" />
+
+    <!-- Gazebo definitions  -->
+    <xacro:include filename="$(find scout_description)/urdf/scout_v2.gazebo" />
+
+</robot>
+
