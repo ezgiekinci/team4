@@ -1,0 +1,18 @@
+[submodule "src/dataset_worlds"]
+	path = src/dataset_worlds
+	url = https://github.com/mlherd/Dataset-of-Gazebo-Worlds-Models-and-Maps.git
+[submodule "src/scout_ros2"]
+	path = src/scout_ros2
+	url = https://github.com/agilexrobotics/scout_ros2.git
+[submodule "src/ugv_gazebo_sim"]
+	path = src/ugv_gazebo_sim
+	url = https://github.com/agilexrobotics/ugv_gazebo_sim.git
+[submodule "src/ugv_sdk"]
+	path = src/ugv_sdk
+	url = https://github.com/agilexrobotics/ugv_sdk.git
+[submodule "src/zed-ros2-interfaces"]
+	path = src/zed-ros2-interfaces
+	url = https://github.com/stereolabs/zed-ros2-interfaces.git
+[submodule "src/zed-ros2-wrapper"]
+	path = src/zed-ros2-wrapper
+	url = https://github.com/stereolabs/zed-ros2-wrapper.git

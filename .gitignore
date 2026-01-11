@@ -1,0 +1,18 @@
+# ROS 2 / colcon
+build/
+install/
+log/
+
+# VSCode / IDE
+.vscode/
+*.code-workspace
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Generated graphs/exports (only frames outputs)
+frames_*.gv
+frames_*.pdf
+
