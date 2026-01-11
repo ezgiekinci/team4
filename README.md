@@ -89,25 +89,6 @@ ros2 run nav2_map_server map_saver_cli -f ~/scout_ws/maps/hospital_floor1 --ros-
 ros2 run nav2_map_server map_saver_cli -f ~/scout_ws/maps/hospital_floor2 --ros-args -p use_sim_time:=true
 ```
 
-## 📋 Project Roadmap
-
-### ✅ Phase 1: Setup & Configuration (Completed)
-- [x] **Simulation Environment:** Integrated AgileX Scout 2.0 with the Hospital World in Gazebo.
-- [x] **Launch System:** Created parametric launch files (`scout_hospital_floors.launch.py`) for dynamic floor selection.
-- [x] **System Synchronization:** Resolved TF Tree and Clock Skew issues using `use_sim_time` parameters.
-- [x] **Version Control:** Established GitHub repository and team collaboration workflow.
-
-### 🚧 Phase 2: Perception & Mapping (In Progress)
-- [ ] **Sensor Fusion:** Developing a ROS2 node (`simple_laser_merger.py`) to merge Front and Rear LiDAR data into a single 360° scan.
-- [ ] **Mapping Floor 1:** Generating a complete occupancy grid map for the Ground Floor using SLAM Toolbox.
-- [ ] **Mapping Floor 2:** Generating a separate occupancy grid map for the Second Floor.
-- [ ] **Map Post-Processing:** Saving and refining `.pgm` and `.yaml` map files for Nav2.
-
-### 📅 Phase 3: Autonomous Navigation (Planned)
-- [ ] **Marker Detection:** Implementing Aruco/AprilTag detection to identify floor transitions (Elevator/Stairs).
-- [ ] **Nav2 Integration:** Configuring Navigation2 stack (Costmaps, Planners, Controllers) for the Scout robot.
-- [ ] **Multi-Floor Logic:** Developing the state machine to switch maps automatically based on marker detection.
-- [ ] **Final Demo:** Autonomous navigation between waypoints across different floors.
 
 ## 🔗 Resources
 
